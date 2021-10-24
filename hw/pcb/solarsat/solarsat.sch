@@ -92,10 +92,6 @@ F 3 "~" H 5300 2350 50  0001 C CNN
 	1    5300 2350
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5300 2600 5300 2550
-Wire Wire Line
-	5300 3000 5300 2950
 $Comp
 L power:VBUS #PWR0102
 U 1 1 60F59E50
@@ -107,16 +103,6 @@ F 3 "" H 4950 1750 50  0001 C CNN
 	1    4950 1750
 	1    0    0    -1  
 $EndComp
-Connection ~ 5300 2550
-Wire Wire Line
-	5300 2550 5300 2500
-Connection ~ 5300 2950
-Wire Wire Line
-	5300 2950 5300 2900
-Wire Wire Line
-	5300 2550 6850 2550
-Wire Wire Line
-	5300 2950 6850 2950
 $Comp
 L power:GND #PWR0103
 U 1 1 60F5FDF8
@@ -141,10 +127,6 @@ F 3 "~" H 6100 3550 50  0001 C CNN
 	1    6100 3550
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	6850 3350 6100 3350
-Wire Wire Line
-	6100 3350 6100 3400
 $Comp
 L power:GND #PWR0104
 U 1 1 60F6229F
@@ -161,20 +143,14 @@ Wire Wire Line
 $Comp
 L power:GND #PWR0105
 U 1 1 60F62B4C
-P 6650 3500
-F 0 "#PWR0105" H 6650 3250 50  0001 C CNN
-F 1 "GND" V 6655 3372 50  0000 R CNN
-F 2 "" H 6650 3500 50  0001 C CNN
-F 3 "" H 6650 3500 50  0001 C CNN
-	1    6650 3500
+P 6600 3400
+F 0 "#PWR0105" H 6600 3150 50  0001 C CNN
+F 1 "GND" V 6605 3272 50  0000 R CNN
+F 2 "" H 6600 3400 50  0001 C CNN
+F 3 "" H 6600 3400 50  0001 C CNN
+	1    6600 3400
 	0    1    1    0   
 $EndComp
-Wire Wire Line
-	6850 3550 6750 3550
-Wire Wire Line
-	6850 3450 6750 3450
-Wire Wire Line
-	6750 3450 6750 3500
 $Comp
 L Device:Jumper_NC_Dual JP1
 U 1 1 60F64B5A
@@ -187,11 +163,6 @@ F 4 "1-2: Buck-Boost, 2-3: Boost" V 6409 4152 50  0000 L CNN "config"
 	1    6500 4050
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	6750 3500 6650 3500
-Connection ~ 6750 3500
-Wire Wire Line
-	6750 3500 6750 3550
 $Comp
 L power:VBUS #PWR0106
 U 1 1 60F6E31F
@@ -215,11 +186,7 @@ F 3 "" H 6500 4300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6850 3650 6750 3650
-Wire Wire Line
-	6750 3650 6750 4050
-Wire Wire Line
-	6750 4050 6600 4050
+	6700 4050 6600 4050
 $Comp
 L Device:C C1
 U 1 1 60F702B4
@@ -641,4 +608,52 @@ Wire Wire Line
 	9950 4850 9950 4750
 Text Notes 9500 1750 0    50   ~ 0
 Vuvp = 3.32 V\nVeoc = 4.16 V
+Wire Wire Line
+	6850 2550 5300 2550
+Wire Wire Line
+	5300 2550 5300 2500
+Wire Wire Line
+	6850 3250 6100 3250
+Wire Wire Line
+	6100 3250 6100 3400
+Wire Wire Line
+	6850 2950 5300 2950
+Wire Wire Line
+	5300 2950 5300 3000
+Wire Wire Line
+	5300 2950 5300 2900
+Connection ~ 5300 2950
+Wire Wire Line
+	5300 2600 5300 2550
+Connection ~ 5300 2550
+Wire Wire Line
+	6600 3400 6700 3400
+Wire Wire Line
+	6700 3400 6700 3350
+Wire Wire Line
+	6700 3350 6850 3350
+Wire Wire Line
+	6850 3450 6700 3450
+Wire Wire Line
+	6700 3450 6700 3400
+Connection ~ 6700 3400
+Wire Wire Line
+	6850 3550 6700 3550
+Wire Wire Line
+	6700 3550 6700 4050
+$Comp
+L power:GND #PWR?
+U 1 1 61776644
+P 6800 4300
+F 0 "#PWR?" H 6800 4050 50  0001 C CNN
+F 1 "GND" H 6805 4127 50  0000 C CNN
+F 2 "" H 6800 4300 50  0001 C CNN
+F 3 "" H 6800 4300 50  0001 C CNN
+	1    6800 4300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 4300 6800 3750
+Wire Wire Line
+	6800 3750 6850 3750
 $EndSCHEMATC
