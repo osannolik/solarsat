@@ -53,12 +53,12 @@ $EndComp
 $Comp
 L power:VBUS #PWR01
 U 1 1 60F59E50
-P 2950 1050
-F 0 "#PWR01" H 2950 900 50  0001 C CNN
-F 1 "VBUS" H 2965 1223 50  0000 C CNN
-F 2 "" H 2950 1050 50  0001 C CNN
-F 3 "" H 2950 1050 50  0001 C CNN
-	1    2950 1050
+P 2450 1050
+F 0 "#PWR01" H 2450 900 50  0001 C CNN
+F 1 "VBUS" H 2465 1223 50  0000 C CNN
+F 2 "" H 2450 1050 50  0001 C CNN
+F 3 "" H 2450 1050 50  0001 C CNN
+	1    2450 1050
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -72,8 +72,6 @@ F 3 "" H 3300 2700 50  0001 C CNN
 	1    3300 2700
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3300 2700 3300 2650
 $Comp
 L Device:C C2
 U 1 1 60F608BC
@@ -101,31 +99,23 @@ Wire Wire Line
 $Comp
 L Device:C C1
 U 1 1 60F702B4
-P 2950 2050
-F 0 "C1" H 3065 2096 50  0000 L CNN
-F 1 "4u7" H 3065 2005 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder" H 2988 1900 50  0001 C CNN
-F 3 "~" H 2950 2050 50  0001 C CNN
-	1    2950 2050
+P 2450 2050
+F 0 "C1" H 2565 2096 50  0000 L CNN
+F 1 "4u7" H 2565 2005 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder" H 2488 1900 50  0001 C CNN
+F 3 "~" H 2450 2050 50  0001 C CNN
+	1    2450 2050
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3300 2650 2950 2650
+	2450 2650 2450 2200
 Wire Wire Line
-	2950 2650 2950 2200
-Connection ~ 3300 2650
+	2450 1050 2450 1350
+Connection ~ 2450 1350
 Wire Wire Line
-	3300 2650 3300 2600
-Wire Wire Line
-	2950 1050 2950 1350
-Connection ~ 2950 1350
-Wire Wire Line
-	2950 1350 2950 1900
+	2450 1350 2450 1900
 Wire Wire Line
 	3300 1500 3300 1350
-Connection ~ 3300 1350
-Wire Wire Line
-	3300 1350 2950 1350
 Wire Wire Line
 	7200 1450 7200 1500
 Wire Wire Line
@@ -201,16 +191,16 @@ Wire Wire Line
 $Comp
 L Connector_Generic:Conn_01x01 J1
 U 1 1 60F8908A
-P 2500 1350
-F 0 "J1" H 2418 1125 50  0000 C CNN
-F 1 "Conn_01x01" H 2418 1216 50  0000 C CNN
-F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 2500 1350 50  0001 C CNN
-F 3 "~" H 2500 1350 50  0001 C CNN
-	1    2500 1350
+P 2000 1350
+F 0 "J1" H 1918 1125 50  0000 C CNN
+F 1 "Conn_01x01" H 1918 1216 50  0000 C CNN
+F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 2000 1350 50  0001 C CNN
+F 3 "~" H 2000 1350 50  0001 C CNN
+	1    2000 1350
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	2950 1350 2750 1350
+	2450 1350 2250 1350
 $Comp
 L Connector_Generic:Conn_01x01 J8
 U 1 1 60F8CDA2
@@ -332,9 +322,9 @@ F 3 "~" H 7200 2450 50  0001 C CNN
 	1    7200 2450
 	1    0    0    -1  
 $EndComp
-Text Notes 1400 2100 0    50   ~ 0
+Text Notes 900  2100 0    50   ~ 0
 SM141K10L\nVmpp = 5.6 V
-Text Notes 1400 1900 0    50   ~ 0
+Text Notes 900  1900 0    50   ~ 0
 SM141K10L\nVmpp = 5.6 V
 $Comp
 L Connector_Generic:Conn_01x01 J5
@@ -369,8 +359,8 @@ Wire Wire Line
 	8400 2650 8400 2200
 Connection ~ 8050 2650
 Wire Wire Line
-	2700 2650 2750 2650
-Connection ~ 2950 2650
+	2200 2650 2250 2650
+Connection ~ 2450 2650
 $Comp
 L Device:C C4
 U 1 1 60FE19C6
@@ -717,39 +707,39 @@ Wire Wire Line
 $Comp
 L Connector_Generic:Conn_01x02 J13
 U 1 1 617BD826
-P 2500 1900
-F 0 "J13" H 2418 2117 50  0000 C CNN
-F 1 "Conn_01x02" H 2418 2026 50  0000 C CNN
-F 2 "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal" H 2500 1900 50  0001 C CNN
-F 3 "~" H 2500 1900 50  0001 C CNN
-	1    2500 1900
+P 2000 1900
+F 0 "J13" H 1918 2117 50  0000 C CNN
+F 1 "Conn_01x02" H 1918 2026 50  0000 C CNN
+F 2 "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal" H 2000 1900 50  0001 C CNN
+F 3 "~" H 2000 1900 50  0001 C CNN
+	1    2000 1900
 	-1   0    0    -1  
 $EndComp
 $Comp
 L Connector_Generic:Conn_01x01 J2
 U 1 1 60FCC66D
-P 2500 2650
-F 0 "J2" H 2418 2425 50  0000 C CNN
-F 1 "Conn_01x01" H 2418 2516 50  0000 C CNN
-F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 2500 2650 50  0001 C CNN
-F 3 "~" H 2500 2650 50  0001 C CNN
-	1    2500 2650
+P 2000 2650
+F 0 "J2" H 1918 2425 50  0000 C CNN
+F 1 "Conn_01x01" H 1918 2516 50  0000 C CNN
+F 2 "TestPoint:TestPoint_Pad_D2.0mm" H 2000 2650 50  0001 C CNN
+F 3 "~" H 2000 2650 50  0001 C CNN
+	1    2000 2650
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	2700 2000 2750 2000
+	2200 2000 2250 2000
 Wire Wire Line
-	2750 2000 2750 2650
-Connection ~ 2750 2650
+	2250 2000 2250 2650
+Connection ~ 2250 2650
 Wire Wire Line
-	2750 2650 2950 2650
+	2250 2650 2450 2650
 Wire Wire Line
-	2700 1900 2750 1900
+	2200 1900 2250 1900
 Wire Wire Line
-	2750 1900 2750 1350
-Connection ~ 2750 1350
+	2250 1900 2250 1350
+Connection ~ 2250 1350
 Wire Wire Line
-	2750 1350 2700 1350
+	2250 1350 2200 1350
 $Comp
 L Connector_Generic:Conn_01x02 J14
 U 1 1 617D2DCE
@@ -783,4 +773,35 @@ Wire Wire Line
 Connection ~ 8400 1250
 Wire Wire Line
 	8400 1250 7200 1250
+Wire Wire Line
+	3300 2600 3300 2650
+Connection ~ 3300 1350
+Wire Wire Line
+	2450 2650 2850 2650
+Connection ~ 3300 2650
+Wire Wire Line
+	3300 2650 3300 2700
+$Comp
+L Device:C C8
+U 1 1 617AA201
+P 2850 2050
+F 0 "C8" H 2965 2096 50  0000 L CNN
+F 1 "NC" H 2965 2005 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 2888 1900 50  0001 C CNN
+F 3 "~" H 2850 2050 50  0001 C CNN
+	1    2850 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2850 1900 2850 1350
+Wire Wire Line
+	2450 1350 2850 1350
+Connection ~ 2850 1350
+Wire Wire Line
+	2850 1350 3300 1350
+Wire Wire Line
+	2850 2200 2850 2650
+Connection ~ 2850 2650
+Wire Wire Line
+	2850 2650 3300 2650
 $EndSCHEMATC
