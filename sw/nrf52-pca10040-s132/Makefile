@@ -89,6 +89,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensor.c \
   $(PROJ_DIR)/src/bme68x.c \
   $(PROJ_DIR)/src/bat_voltage.c \
+  $(PROJ_DIR)/src/ble_device.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \

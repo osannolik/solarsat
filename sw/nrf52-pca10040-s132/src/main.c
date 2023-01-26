@@ -52,10 +52,10 @@
 #include "app_error.h"
 #include "nrf_delay.h"
 
-
 #include "rgb_led.h"
 #include "sensor.h"
 #include "bat_voltage.h"
+#include "ble_device.h"
 
 #include "nrf_drv_clock.h"
 #include "app_timer.h"
@@ -165,6 +165,8 @@ int main(void)
     //rtc_config();
     //saadc_init();
     bat_voltage_init(&bat_voltage, BOARD_BAT_ADC_PIN);
+
+    ble_device_init();
 
     nrf_delay_ms(5);
 

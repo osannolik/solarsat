@@ -1,0 +1,6 @@
+#ifndef NRF52_PCA10040_S132_BLE_DEVICE_H
+#define NRF52_PCA10040_S132_BLE_DEVICE_H
+
+void ble_device_init();
+
+#endif //NRF52_PCA10040_S132_BLE_DEVICE_H
