@@ -1,58 +1,45 @@
 #include "ble_device.h"
 
-#include "app_timer.h"
+#include "app_error.h"
 
 #include "nrf_sdh.h"
 #include "nrf_sdh_ble.h"
 #include "ble_srv_common.h"
 #include "ble_advdata.h"
 
-#define APP_BLE_CONN_CFG_TAG            1                                  /**< A tag identifying the SoftDevice BLE configuration. */
+#define APP_BLE_CONN_CFG_TAG 1 /**< A tag identifying the SoftDevice BLE configuration. */
+#define ADV_MANU_DATA_SIZE_MAX 8
 
-#define NON_CONNECTABLE_ADV_INTERVAL    MSEC_TO_UNITS(1000, UNIT_0_625_MS)  /**< The advertising interval for non-connectable advertisement (100 ms). This value can vary between 100ms to 10.24s). */
+/**< Parameters to be passed to the stack when starting advertising. */
+static ble_gap_adv_params_t m_adv_params;
 
-APP_TIMER_DEF(m_timer);
+/**< Advertising handle used to identify an advertising set. */
+static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
-static ble_gap_adv_params_t m_adv_params;                                  /**< Parameters to be passed to the stack when starting advertising. */
-static uint8_t              m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET; /**< Advertising handle used to identify an advertising set. */
-static uint8_t              m_enc_advdata[BLE_GAP_ADV_SET_DATA_SIZE_MAX];  /**< Buffer for storing an encoded advertising set. */
+/**< Buffer for storing an encoded advertising set. */
+static uint8_t m_enc_advdata[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
 
-/**@brief Struct that contains pointers to the encoded advertising data. */
-static ble_gap_adv_data_t m_adv_data =
-    {
-        .adv_data =
-            {
-                .p_data = m_enc_advdata,
-                .len    = BLE_GAP_ADV_SET_DATA_SIZE_MAX
-            },
-        .scan_rsp_data =
-            {
-                .p_data = NULL,
-                .len    = 0
+static uint8_t m_manu_data[ADV_MANU_DATA_SIZE_MAX] = { 0 };
 
-            }
-    };
+static ble_gap_adv_data_t m_adv_data = {
+    .adv_data = {
+        .p_data = m_enc_advdata,
+        .len    = BLE_GAP_ADV_SET_DATA_SIZE_MAX
+    },
+    .scan_rsp_data = {
+        .p_data = NULL,
+        .len    = 0
+    }
+};
 
-#define MDATA_LEN 2
-static uint8_t mdata[MDATA_LEN] = {0x01, 0x02};
-
-#define MANUFACTURER_COMPANY_ID_TEST 0xFFFF
-
-/**@brief Function for initializing the Advertising functionality.
- *
- * @details Encodes the required advertising data and passes it to the stack.
- *          Also builds a structure to be passed to the stack when starting advertising.
- */
-static void advertising_init(uint8_t *p_manu_data, const uint8_t len)
-{
+static void advertising_init(const uint8_t *p_manu_data, const uint8_t len) {
   uint32_t      err_code;
   ble_advdata_t advdata;
 
   ble_advdata_manuf_data_t manuf_data;
   manuf_data.company_identifier = MANUFACTURER_COMPANY_ID_TEST;
-  manuf_data.data.p_data        = p_manu_data;
+  manuf_data.data.p_data        = (uint8_t*) p_manu_data;
   manuf_data.data.size          = len;
-
 
   memset(&advdata, 0, sizeof(advdata));
 
@@ -66,8 +53,8 @@ static void advertising_init(uint8_t *p_manu_data, const uint8_t len)
   m_adv_params.properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
   m_adv_params.p_peer_addr     = NULL;
   m_adv_params.filter_policy   = BLE_GAP_ADV_FP_ANY;
-  m_adv_params.interval        = NON_CONNECTABLE_ADV_INTERVAL;
-  m_adv_params.duration        = 0; // Never time out.
+  m_adv_params.interval        = MSEC_TO_UNITS(BLE_ADVERTISE_INTERVAL_MS, UNIT_0_625_MS);
+  m_adv_params.duration        = BLE_TIMEOUT_NEVER;
 
   err_code = ble_advdata_encode(&advdata, m_adv_data.adv_data.p_data, &m_adv_data.adv_data.len);
   APP_ERROR_CHECK(err_code);
@@ -86,25 +73,28 @@ static void advertising_init(uint8_t *p_manu_data, const uint8_t len)
   APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for starting advertising.
- */
-static void advertising_start(void)
-{
+static void advertising_start(void) {
   ret_code_t err_code;
 
   err_code = sd_ble_gap_adv_start(m_adv_handle, APP_BLE_CONN_CFG_TAG);
   APP_ERROR_CHECK(err_code);
-
-//  err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-//  APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for initializing the BLE stack.
- *
- * @details Initializes the SoftDevice and the BLE event interrupt.
- */
-static void ble_stack_init(void)
-{
+void ble_device_set_advertising_data(const uint8_t* data, const uint8_t len) {
+  const uint8_t used_len = MIN(len, ADV_MANU_DATA_SIZE_MAX);
+  memcpy(m_manu_data, data, used_len);
+
+  ret_code_t err_code;
+
+  err_code = sd_ble_gap_adv_stop(m_adv_handle);
+  APP_ERROR_CHECK(err_code);
+
+  advertising_init(m_manu_data, used_len);
+
+  advertising_start();
+}
+
+static void ble_stack_init(void) {
   ret_code_t err_code;
 
   err_code = nrf_sdh_enable_request();
@@ -116,21 +106,24 @@ static void ble_stack_init(void)
   err_code = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
   APP_ERROR_CHECK(err_code);
 
-  // Enable BLE stack.
   err_code = nrf_sdh_ble_enable(&ram_start);
   APP_ERROR_CHECK(err_code);
 }
 
-#if 0
-/**@brief Function for initializing logging. */
-static void log_init(void)
-{
-  ret_code_t err_code = NRF_LOG_INIT(NULL);
+static void gap_params_init(void) {
+  ret_code_t              err_code;
+  ble_gap_conn_sec_mode_t sec_mode;
+
+  BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+
+  err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                        (const uint8_t *) DEVICE_NAME,
+                                        strlen(DEVICE_NAME));
   APP_ERROR_CHECK(err_code);
 
-  NRF_LOG_DEFAULT_BACKENDS_INIT();
+  err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE);
+  APP_ERROR_CHECK(err_code);
 }
-#endif
 
 #if 0
 /**@brief Function for initializing power management.
@@ -143,81 +136,12 @@ static void power_management_init(void)
 }
 #endif
 
-static void notification_timeout_handler(void * p_context)
-{
-  UNUSED_PARAMETER(p_context);
-
-  mdata[0]++;
-
-  ret_code_t err_code;
-
-  err_code = sd_ble_gap_adv_stop(m_adv_handle);
-  APP_ERROR_CHECK(err_code);
-
-  advertising_init(mdata, MDATA_LEN);
-
-  err_code = sd_ble_gap_adv_start(m_adv_handle, APP_BLE_CONN_CFG_TAG);
-  APP_ERROR_CHECK(err_code);
-}
-
-/**@brief Function for the GAP initialization.
- *
- * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
- *          device including the device name, appearance, and the preferred connection parameters.
- */
-#define D_NAME "sat"
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.1 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(200, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (0.2 second). */
-#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
-#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory timeout (4 seconds). */
-
-static void gap_params_init(void)
-{
-
-  ret_code_t              err_code;
-  ble_gap_conn_params_t   gap_conn_params;
-  ble_gap_conn_sec_mode_t sec_mode;
-
-  BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
-
-  err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                        (const uint8_t *)D_NAME,
-                                        strlen(D_NAME));
-  APP_ERROR_CHECK(err_code);
-
-  err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_THERMOMETER);
-  APP_ERROR_CHECK(err_code);
-
-  memset(&gap_conn_params, 0, sizeof(gap_conn_params));
-
-  gap_conn_params.min_conn_interval = MIN_CONN_INTERVAL;
-  gap_conn_params.max_conn_interval = MAX_CONN_INTERVAL;
-  gap_conn_params.slave_latency     = SLAVE_LATENCY;
-  gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT;
-
-  err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-  APP_ERROR_CHECK(err_code);
-}
-
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(2000)
-
 void ble_device_init() {
-
-  //log_init();
-  //leds_init();
   //power_management_init();
   ble_stack_init();
   gap_params_init();
-  advertising_init(mdata, MDATA_LEN);
+
+  advertising_init(m_manu_data, 4);
 
   advertising_start();
-
-  ret_code_t err_code;
-
-  err_code = app_timer_create(&m_timer, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
-  APP_ERROR_CHECK(err_code);
-
-  err_code = app_timer_start(m_timer, NOTIFICATION_INTERVAL, NULL);
-  APP_ERROR_CHECK(err_code);
-
 }

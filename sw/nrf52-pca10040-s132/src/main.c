@@ -68,15 +68,6 @@
 
 APP_TIMER_DEF(measurement_timer);
 
-static void lfclk_init(void)
-{
-    uint32_t err_code;
-    err_code = nrf_drv_clock_init();
-    APP_ERROR_CHECK(err_code);
-
-    nrf_drv_clock_lfclk_request(NULL);
-}
-
 #define BOARD_SDA_PIN 11
 #define BOARD_SCL_PIN 12
 static sensor_t sensor;
@@ -89,33 +80,62 @@ static rgb_led_t rgb_led;
 #define BOARD_BAT_ADC_PIN NRF_SAADC_INPUT_AIN0
 static bat_voltage_t bat_voltage;
 
-volatile static bool djent = false;
+enum meas_state {
+  START_SAMPLING,
+  PROCESS_RESULT
+};
 
-static uint8_t meas_task = 0;
+static uint8_t meas_task = START_SAMPLING;
 
-volatile static float bat_volt = 0.0f;
+uint16_t bcd(uint16_t value) {
+  uint16_t tmp = 0;
+  const int n_nibbles = 2 * sizeof(uint16_t);
+
+  for (int i = 0; i < n_nibbles; i++) {
+    tmp += ((value % 10) << n_nibbles*i);
+    value /= 10;
+  }
+
+  return tmp;
+}
+
+void pack_ble_data(float battery_voltage, sensor_measurement_t sensor_meas, uint8_t ble_data[4]) {
+  const uint16_t battery_mv = bcd((uint16_t) (1000.0f * battery_voltage));
+  const uint16_t temperature = bcd((uint16_t)(100.0f * sensor_meas.temperature));
+
+  ble_data[0] = (uint8_t) (battery_mv >> 8);
+  ble_data[1] = (uint8_t) (battery_mv & 0x00ff);
+  ble_data[2] = (uint8_t) (temperature >> 8);
+  ble_data[3] = (uint8_t) (temperature & 0x00ff);
+}
 
 void periodic_measurements(void * p_context) {
   (void) p_context;
-  djent = !djent;
 
   int8_t err_code;
   sensor_measurement_t measurement;
 
+  const int len = 4;
+  uint8_t adv_data[len];
+
   switch (meas_task) {
-    case 0:
+    case START_SAMPLING:
       rgb_led_set_duty_red(&rgb_led, 1);
 
       const uint32_t delay_ms = start_measurements(&sensor) / 1000;
 
-      meas_task = 1;
+      meas_task = PROCESS_RESULT;
       err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(delay_ms), NULL);
       APP_ERROR_CHECK(err_code);
       break;
-    case 1:
+    case PROCESS_RESULT:
       measurement = collect_measurements(&sensor);
 
-      bat_volt = bat_voltage_value(&bat_voltage);
+      const float bat_volt = bat_voltage_value(&bat_voltage);
+
+      pack_ble_data(bat_volt, measurement, adv_data);
+
+      ble_device_set_advertising_data(adv_data, len);
 
       rgb_led_set_duty_red(&rgb_led, 0);
 
@@ -125,13 +145,22 @@ void periodic_measurements(void * p_context) {
         rgb_led_set_duty_green(&rgb_led, 0);
       }
 
-      meas_task = 0;
-      err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(2*1000), NULL);
+      meas_task = START_SAMPLING;
+      err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(5*1000), NULL);
       APP_ERROR_CHECK(err_code);
       break;
     default:
       break;
   }
+}
+
+static void lfclk_init(void)
+{
+  uint32_t err_code;
+  err_code = nrf_drv_clock_init();
+  APP_ERROR_CHECK(err_code);
+
+  nrf_drv_clock_lfclk_request(NULL);
 }
 
 int main(void)
@@ -154,23 +183,19 @@ int main(void)
     err_code = app_timer_create(&measurement_timer, APP_TIMER_MODE_SINGLE_SHOT, periodic_measurements);
     APP_ERROR_CHECK(err_code);
 
-    //pwm_init();
     rgb_led_init(&rgb_led, BOARD_LED_R_PIN, BOARD_LED_G_PIN, BOARD_LED_B_PIN);
 
-    //twi_init();
     sensor_init(&sensor, BOARD_SCL_PIN, BOARD_SDA_PIN);
     nrf_delay_ms(5);
     sensor_config(&sensor);
 
-    //rtc_config();
-    //saadc_init();
     bat_voltage_init(&bat_voltage, BOARD_BAT_ADC_PIN);
 
     ble_device_init();
 
     nrf_delay_ms(5);
 
-    err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(2*1000), NULL);
+    err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(5*1000), NULL);
     APP_ERROR_CHECK(err_code);
 
     while (true) {
