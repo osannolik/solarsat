@@ -68,6 +68,9 @@
 
 APP_TIMER_DEF(measurement_timer);
 
+#define MEASURE_INTERVAL_MS (10*1000)
+#define FLASH_LED
+
 #define BOARD_SDA_PIN 11
 #define BOARD_SCL_PIN 12
 static sensor_t sensor;
@@ -120,11 +123,13 @@ void periodic_measurements(void * p_context) {
 
   switch (meas_task) {
     case START_SAMPLING:
-      rgb_led_set_duty_red(&rgb_led, 1);
+      meas_task = PROCESS_RESULT;
 
+#ifdef FLASH_LED
+      rgb_led_set_duty_red(&rgb_led, 1);
+#endif
       const uint32_t delay_ms = start_measurements(&sensor) / 1000;
 
-      meas_task = PROCESS_RESULT;
       err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(delay_ms), NULL);
       APP_ERROR_CHECK(err_code);
       break;
@@ -137,16 +142,18 @@ void periodic_measurements(void * p_context) {
 
       ble_device_set_advertising_data(adv_data, len);
 
+#ifdef FLASH_LED
       rgb_led_set_duty_red(&rgb_led, 0);
-
+/*
       if (measurement.temperature > 30.0f) {
         rgb_led_set_duty_green(&rgb_led, (uint8_t) (measurement.temperature - 30.0f));
       } else {
         rgb_led_set_duty_green(&rgb_led, 0);
       }
-
+*/
+#endif
       meas_task = START_SAMPLING;
-      err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(5*1000), NULL);
+      err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(MEASURE_INTERVAL_MS), NULL);
       APP_ERROR_CHECK(err_code);
       break;
     default:
@@ -195,7 +202,7 @@ int main(void)
 
     nrf_delay_ms(5);
 
-    err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(5*1000), NULL);
+    err_code = app_timer_start(measurement_timer, APP_TIMER_TICKS(MEASURE_INTERVAL_MS), NULL);
     APP_ERROR_CHECK(err_code);
 
     while (true) {
